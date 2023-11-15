@@ -8,7 +8,7 @@ from cryptography import x509
 from cryptography.hazmat._oid import NameOID
 from cryptography.hazmat.primitives.asymmetric import dsa, ec
 
-from limbo.assets import _ASSETS_PATH, Certificate, ext
+from limbo.assets import ASSETS_PATH, Certificate, ext
 from limbo.models import Feature, KeyUsage, KnownEKUs, PeerName
 from limbo.testcases._core import Builder, testcase
 
@@ -19,7 +19,7 @@ def cryptographydotio_chain(builder: Builder) -> None:
     Verifies against a saved copy of `cryptography.io`'s chain. This should
     trivially succeed.
     """
-    chain_path = _ASSETS_PATH / "cryptography.io.pem"
+    chain_path = ASSETS_PATH / "cryptography.io.pem"
     chain = [Certificate(c) for c in x509.load_pem_x509_certificates(chain_path.read_bytes())]
 
     leaf, root = chain.pop(0), chain.pop(-1)
@@ -41,7 +41,7 @@ def cryptographydotio_chain_missing_intermediate(builder: Builder) -> None:
     Verifies against a saved copy of `cryptography.io`'s chain, but without its
     intermediates. This should trivially fail.
     """
-    chain_path = _ASSETS_PATH / "cryptography.io.pem"
+    chain_path = ASSETS_PATH / "cryptography.io.pem"
     chain = [Certificate(c) for c in x509.load_pem_x509_certificates(chain_path.read_bytes())]
 
     leaf, root = chain.pop(0), chain.pop(-1)
