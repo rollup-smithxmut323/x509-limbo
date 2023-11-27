@@ -1,19 +1,15 @@
 use std::time::SystemTime;
 
 use chrono::{DateTime, Utc};
-use models::{Feature, Limbo, PeerKind, Testcase, ValidationKind};
-use serde::Serialize;
+use limbo_harness_support::{
+    load_limbo,
+    models::{Feature, LimboResult, PeerKind, Testcase, TestcaseResult, ValidationKind},
+};
 
-pub(crate) mod models;
-
-// `cargo run` runs from the workspace root, so these are relative to
-// the root.
-const LIMBO_JSON: &str = "limbo.json";
 const LIMBO_RESULTS_OUT: &str = "./harness/rust-webpki/results.json";
 
 fn main() {
-    let limbo =
-        serde_json::from_str::<Limbo>(&std::fs::read_to_string(LIMBO_JSON).unwrap()).unwrap();
+    let limbo = load_limbo();
 
     let mut results = vec![];
     for testcase in limbo.testcases {
@@ -31,54 +27,6 @@ fn main() {
         serde_json::to_string_pretty(&result).unwrap(),
     )
     .unwrap()
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "UPPERCASE")]
-enum ActualResult {
-    Success,
-    Failure,
-    Skipped,
-}
-
-#[derive(Serialize)]
-struct TestcaseResult {
-    id: String,
-    actual_result: ActualResult,
-    context: Option<String>,
-}
-
-impl TestcaseResult {
-    fn fail(tc: &Testcase, reason: &str) -> Self {
-        TestcaseResult {
-            id: tc.id.clone(),
-            actual_result: ActualResult::Failure,
-            context: Some(reason.into()),
-        }
-    }
-
-    fn success(tc: &Testcase) -> Self {
-        TestcaseResult {
-            id: tc.id.clone(),
-            actual_result: ActualResult::Success,
-            context: None,
-        }
-    }
-
-    fn skip(tc: &Testcase, reason: &str) -> Self {
-        TestcaseResult {
-            id: tc.id.clone(),
-            actual_result: ActualResult::Skipped,
-            context: Some(reason.into()),
-        }
-    }
-}
-
-#[derive(Serialize)]
-struct LimboResult {
-    version: u8,
-    harness: String,
-    results: Vec<TestcaseResult>,
 }
 
 fn render_err(e: &webpki::ErrorExt) -> String {
